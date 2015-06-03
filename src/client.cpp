@@ -295,7 +295,6 @@ PVR_ERROR GetAddonCapabilities(PVR_ADDON_CAPABILITIES* pCapabilities)
   pCapabilities->bSupportsChannelGroups    = true;
   pCapabilities->bHandlesInputStream       = true;
   pCapabilities->bHandlesDemuxing          = true;
-  pCapabilities->bSupportsRecordingFolders = true;
   pCapabilities->bSupportsRecordingEdl     = true;
 
   return PVR_ERROR_NO_ERROR;
@@ -489,6 +488,11 @@ PVR_ERROR DeleteAllRecordingsFromTrash()
   return PVR_ERROR_NOT_IMPLEMENTED;
 }
 
+PVR_ERROR GetTimerTypes(PVR_TIMER_TYPE types[], int *size)
+{
+  return PVR_ERROR_NOT_IMPLEMENTED;
+}
+
 int GetTimersAmount(void)
 {
   return tvh->GetTimerCount();
@@ -504,7 +508,7 @@ PVR_ERROR AddTimer(const PVR_TIMER &timer)
   return tvh->AddTimer(timer);
 }
 
-PVR_ERROR DeleteTimer(const PVR_TIMER &timer, bool bForceDelete)
+PVR_ERROR DeleteTimer(const PVR_TIMER &timer, bool bForceDelete, bool /*bDeleteScheduled*/)
 {
   return tvh->DeleteTimer(timer, bForceDelete);
 }

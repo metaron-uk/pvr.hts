@@ -536,6 +536,9 @@ PVR_ERROR CTvheadend::GetTimers ( ADDON_HANDLE handle )
       PVR_TIMER tmr;
       memset(&tmr, 0, sizeof(tmr));
 
+      /* TODO: Implement own timer types to get support for the timer features introduced with PVR API 1.9.7 */
+      tmr.iTimerType = PVR_TIMER_TYPE_NONE;
+
       tmr.iClientIndex      = rit->second.id;
       tmr.iClientChannelUid = rit->second.channel;
       tmr.startTime         = (time_t)rit->second.start;
@@ -547,7 +550,6 @@ PVR_ERROR CTvheadend::GetTimers ( ADDON_HANDLE handle )
       tmr.state             = rit->second.state;
       tmr.iPriority         = rit->second.priority;
       tmr.iLifetime         = rit->second.retention;
-      tmr.bIsRepeating      = false; // unused
       tmr.firstDay          = 0;     // unused
       tmr.iWeekdays         = 0;     // unused
       tmr.iEpgUid           = 0;     // unused
@@ -575,7 +577,7 @@ PVR_ERROR CTvheadend::AddTimer ( const PVR_TIMER &timer )
   uint32_t u32;
   dvr_prio_t prio;
 
-  if (timer.bIsRepeating && timer.iWeekdays)
+  if (timer.iWeekdays > 0)
   {
     if (m_conn.GetProtocol() >= 18)
       return AddTimeRecording(timer);
