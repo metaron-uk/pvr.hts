@@ -169,8 +169,16 @@ PVR_ERROR AutoRecordings::SendAutorecAdd(const PVR_TIMER &timer)
   /* Note: As a result of internal filename cleanup, for "directory" == "/", */
   /*       tvh would put recordings into a folder named "-". Not a big issue */
   /*       but ugly.                                                         */
-  if (strcmp(timer.strDirectory, "/") != 0)
+
+//  PVR_TIMER_TYPE myTimerType = GetTimerType(timer.iTimerType).iAttributes; //TODO how do yoyu actually do this?
+//  if (myTimerType.iAttributes & PVR_TIMER_TYPE_SUPPORTS_RECORDING_FOLDER_LIST) //Use Recording Fodler List
+//  {
+//     if(timer.iRecordingFolderList < 
+//  }
+  if (strcmp(timer.strDirectory, "/") != 0) //Use standard recording folders
+  {
     htsmsg_add_str(m, "directory", timer.strDirectory);
+  }
 
   /* Note: not sending any of the following three values will be interpreted by tvh as "any". */
   if (timer.iClientChannelUid >= 0)

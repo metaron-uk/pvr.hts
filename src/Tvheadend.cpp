@@ -512,6 +512,10 @@ struct TimerType : public PVR_TIMER_TYPE
             const std::vector< std::pair<int, std::string> > &lifetimeValues
               = std::vector< std::pair<int, std::string> >(),
             int lifetimeDefault
+              = 0,
+            const std::vector< std::pair<int, std::string> > &recordingFolderListValues
+              = std::vector< std::pair<int, std::string> >(),
+            unsigned int recordingFolderListDefault
               = 0)
   {
     iId                              = id;
@@ -522,6 +526,9 @@ struct TimerType : public PVR_TIMER_TYPE
     iPreventDuplicateEpisodesDefault = dupEpisodesDefault;
     iLifetimesSize                   = lifetimeValues.size();
     iLifetimesDefault                = lifetimeDefault;
+    iRecordingFolderListSize         = recordingFolderListValues.size();
+    iRecordingFolderListDefault      = recordingFolderListDefault;
+
 
     strncpy(strDescription, description.c_str(), sizeof(strDescription) - 1);
 
@@ -544,6 +551,12 @@ struct TimerType : public PVR_TIMER_TYPE
     {
       lifetimes[i].iValue = it->first;
       strncpy(lifetimes[i].strDescription, it->second.c_str(), sizeof(lifetimes[i].strDescription) - 1);
+    }
+    i = 0;
+    for (auto it = recordingFolderListValues.begin(); it != recordingFolderListValues.end(); ++it, ++i)
+    {
+      recordingFolderList[i].iValue = it->first;
+      strncpy(recordingFolderList[i].strDescription, it->second.c_str(), sizeof(recordingFolderList[i].strDescription) - 1);
     }
   }
 };
@@ -573,6 +586,17 @@ PVR_ERROR CTvheadend::GetTimerTypes ( PVR_TIMER_TYPE types[], int *size )
     deDupValues.push_back(std::make_pair(DVR_AUTOREC_RECORD_DIFFERENT_DESCRIPTION,    XBMC->GetLocalizedString(30359)));
     deDupValues.push_back(std::make_pair(DVR_AUTOREC_RECORD_ONCE_PER_WEEK,            XBMC->GetLocalizedString(30360)));
     deDupValues.push_back(std::make_pair(DVR_AUTOREC_RECORD_ONCE_PER_DAY,             XBMC->GetLocalizedString(30361)));
+  }
+
+  /* PVR_Timer.iRecordingFolderList values and presentation (TODO nasty hacto to check it works) */
+  static std::vector< std::pair<int, std::string> > myFolderValues;
+  if (myFolderValues.size() == 0)
+  {
+    myFolderValues.push_back(std::make_pair(0,"Default"));
+    myFolderValues.push_back(std::make_pair(1,"Soaps"));
+    myFolderValues.push_back(std::make_pair(2,"Box Sets"));
+    myFolderValues.push_back(std::make_pair(3,"Films"));
+    myFolderValues.push_back(std::make_pair(4,"Sports"));
   }
 
   static const unsigned int TIMER_ONCE_MANUAL_ATTRIBS
@@ -661,12 +685,12 @@ PVR_ERROR CTvheadend::GetTimerTypes ( PVR_TIMER_TYPE types[], int *size )
         PVR_TIMER_TYPE_SUPPORTS_WEEKDAYS          |
         PVR_TIMER_TYPE_SUPPORTS_PRIORITY          |
         PVR_TIMER_TYPE_SUPPORTS_LIFETIME          |
-        PVR_TIMER_TYPE_SUPPORTS_RECORDING_FOLDERS,
+        PVR_TIMER_TYPE_SUPPORTS_RECORDING_FOLDERS ,
         /* Let Kodi generate the description. */
         "",
         /* Values definitions for priorities. */
         priorityValues,
-        DVR_PRIO_NORMAL));
+        DVR_PRIO_NORMAL ));
 
     unsigned int TIMER_REPEATING_EPG_ATTRIBS
       = PVR_TIMER_TYPE_IS_REPEATING                |
@@ -678,7 +702,8 @@ PVR_ERROR CTvheadend::GetTimerTypes ( PVR_TIMER_TYPE types[], int *size )
         PVR_TIMER_TYPE_SUPPORTS_START_END_MARGIN   |
         PVR_TIMER_TYPE_SUPPORTS_PRIORITY           |
         PVR_TIMER_TYPE_SUPPORTS_LIFETIME           |
-        PVR_TIMER_TYPE_SUPPORTS_RECORDING_FOLDERS;
+        PVR_TIMER_TYPE_SUPPORTS_RECORDING_FOLDERS  |
+        PVR_TIMER_TYPE_SUPPORTS_RECORDING_FOLDER_LIST; //One type to check it works
 
     if (m_conn.GetProtocol() >= 20)
     {
@@ -700,7 +725,10 @@ PVR_ERROR CTvheadend::GetTimerTypes ( PVR_TIMER_TYPE types[], int *size )
         DVR_PRIO_NORMAL,
         /* Values definitions for prevent duplicate episodes. */
         deDupValues,
-        DVR_AUTOREC_RECORD_ALL));
+        DVR_AUTOREC_RECORD_ALL,
+        /* Folder name definitions */
+        myFolderValues,
+        0 )); //Default
   }
 
   /* Copy data to target array. */
