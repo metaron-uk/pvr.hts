@@ -166,18 +166,28 @@ PVR_ERROR AutoRecordings::SendAutorecAdd(const PVR_TIMER &timer)
   htsmsg_add_u32(m, "priority",    timer.iPriority);
   htsmsg_add_u32(m, "enabled",     timer.state == PVR_TIMER_STATE_DISABLED ? 0 : 1);
 
-  /* Note: As a result of internal filename cleanup, for "directory" == "/", */
-  /*       tvh would put recordings into a folder named "-". Not a big issue */
-  /*       but ugly.                                                         */
-
-//  PVR_TIMER_TYPE myTimerType = GetTimerType(timer.iTimerType).iAttributes; //TODO how do yoyu actually do this?
-//  if (myTimerType.iAttributes & PVR_TIMER_TYPE_SUPPORTS_RECORDING_FOLDER_LIST) //Use Recording Fodler List
-//  {
-//     if(timer.iRecordingFolderList < 
-//  }
-  if (strcmp(timer.strDirectory, "/") != 0) //Use standard recording folders
+  //Hack to copy the string from the selected Recording Group into the directory field
+  bool foundIt = false;
+/*
+  for( std::vector< std::pair<int, std::string> >::iterator it = m_recGroupValues.begin(); it != m_recGroupValues.end(); ++it)
   {
-    htsmsg_add_str(m, "directory", timer.strDirectory);
+    if (it->first == timer.iRecordingGroup)
+    {
+      htsmsg_add_str(m, "directory", it->second.c_str());
+      foundIt = true;
+      break;
+    }
+  }
+*/
+  if (!foundIt) 
+  { 
+    /* Note: As a result of internal filename cleanup, for "directory" == "/", */
+    /*       tvh would put recordings into a folder named "-". Not a big issue */
+    /*       but ugly.                                                         */
+    if (strcmp(timer.strDirectory, "/") != 0) //Use standard recording folders
+    {
+      htsmsg_add_str(m, "directory", timer.strDirectory);
+    }
   }
 
   /* Note: not sending any of the following three values will be interpreted by tvh as "any". */
@@ -438,3 +448,23 @@ bool AutoRecordings::ParseAutorecDelete(htsmsg_t *msg)
 
   return true;
 }
+/*
+bool AutoRecordings::SetLifetimeValues(std::vector< std::pair<int, std::string> > &listValues)
+{
+  for (std::vector< std::pair<int, std::string> >::const_iterator it = listValues.begin(); it != listValues.end(); it++)
+  {
+    m_lifeValues.push_back(std::make_pair( it->first, it->second ));
+  }
+  return m_lifeValues.size();
+}
+*/
+/*
+bool AutoRecordings::SetRecordingGroupValues(std::vector< std::pair<int, std::string> > &listValues)
+{
+  for (std::vector< std::pair<int, std::string> >::const_iterator it = listValues.begin(); it != listValues.end(); it++)
+  {
+    m_recGroupValues.push_back(std::make_pair( it->first, it->second ));
+  }
+  return m_recGroupValues.size();
+}
+*/

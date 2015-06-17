@@ -513,9 +513,9 @@ struct TimerType : public PVR_TIMER_TYPE
               = std::vector< std::pair<int, std::string> >(),
             int lifetimeDefault
               = 0,
-            const std::vector< std::pair<int, std::string> > &recordingFolderListValues
+            const std::vector< std::pair<int, std::string> > &recordingGroupValues
               = std::vector< std::pair<int, std::string> >(),
-            unsigned int recordingFolderListDefault
+            unsigned int recordingGroupDefault
               = 0)
   {
     iId                              = id;
@@ -526,8 +526,8 @@ struct TimerType : public PVR_TIMER_TYPE
     iPreventDuplicateEpisodesDefault = dupEpisodesDefault;
     iLifetimesSize                   = lifetimeValues.size();
     iLifetimesDefault                = lifetimeDefault;
-    iRecordingFolderListSize         = recordingFolderListValues.size();
-    iRecordingFolderListDefault      = recordingFolderListDefault;
+    iRecordingGroupSize         = recordingGroupValues.size();
+    iRecordingGroupDefault      = recordingGroupDefault;
 
 
     strncpy(strDescription, description.c_str(), sizeof(strDescription) - 1);
@@ -553,10 +553,10 @@ struct TimerType : public PVR_TIMER_TYPE
       strncpy(lifetimes[i].strDescription, it->second.c_str(), sizeof(lifetimes[i].strDescription) - 1);
     }
     i = 0;
-    for (auto it = recordingFolderListValues.begin(); it != recordingFolderListValues.end(); ++it, ++i)
+    for (auto it = recordingGroupValues.begin(); it != recordingGroupValues.end(); ++it, ++i)
     {
-      recordingFolderList[i].iValue = it->first;
-      strncpy(recordingFolderList[i].strDescription, it->second.c_str(), sizeof(recordingFolderList[i].strDescription) - 1);
+      recordingGroup[i].iValue = it->first;
+      strncpy(recordingGroup[i].strDescription, it->second.c_str(), sizeof(recordingGroup[i].strDescription) - 1);
     }
   }
 };
@@ -588,16 +588,33 @@ PVR_ERROR CTvheadend::GetTimerTypes ( PVR_TIMER_TYPE types[], int *size )
     deDupValues.push_back(std::make_pair(DVR_AUTOREC_RECORD_ONCE_PER_DAY,             XBMC->GetLocalizedString(30361)));
   }
 
-  /* PVR_Timer.iRecordingFolderList values and presentation (TODO nasty hacto to check it works) */
-  static std::vector< std::pair<int, std::string> > myFolderValues;
-  if (myFolderValues.size() == 0)
+  /* PVR_Timer.iLifetime values and presentation.*/
+  static std::vector< std::pair<int, std::string> > lifeValues;
+  if (lifeValues.size() == 0)
   {
-    myFolderValues.push_back(std::make_pair(0,"Default"));
-    myFolderValues.push_back(std::make_pair(1,"Soaps"));
-    myFolderValues.push_back(std::make_pair(2,"Box Sets"));
-    myFolderValues.push_back(std::make_pair(3,"Films"));
-    myFolderValues.push_back(std::make_pair(4,"Sports"));
+    lifeValues.push_back(std::make_pair(  0, "Forever"));
+    lifeValues.push_back(std::make_pair(  7, "One Week"));
+    lifeValues.push_back(std::make_pair( 31, "One Month"));
+    lifeValues.push_back(std::make_pair(365, "One Year"));
+    lifeValues.push_back(std::make_pair( -1, "Until Disk Full"));
+    lifeValues.push_back(std::make_pair(-10, "Last 10"));
+    lifeValues.push_back(std::make_pair(-20, "Last 20"));
   }
+
+//  m_autoRecordings->SetLifetimeValues(&lifeValues);
+
+  /* PVR_Timer.iRecordingGroup values and presentation (TODO nasty hacto to check it works) */
+  static std::vector< std::pair<int, std::string> > recGroupValues;
+  if (recGroupValues.size() == 0)
+  {
+    recGroupValues.push_back(std::make_pair(0,"Default"));
+    recGroupValues.push_back(std::make_pair(1,"Soaps"));
+    recGroupValues.push_back(std::make_pair(2,"Box Sets"));
+    recGroupValues.push_back(std::make_pair(3,"Films"));
+    recGroupValues.push_back(std::make_pair(4,"Sports"));
+  }
+
+//  m_autoRecordings->SetRecordingGroupValues(&recGroupValues);
 
   static const unsigned int TIMER_ONCE_MANUAL_ATTRIBS
     = PVR_TIMER_TYPE_IS_MANUAL               |
@@ -702,8 +719,7 @@ PVR_ERROR CTvheadend::GetTimerTypes ( PVR_TIMER_TYPE types[], int *size )
         PVR_TIMER_TYPE_SUPPORTS_START_END_MARGIN   |
         PVR_TIMER_TYPE_SUPPORTS_PRIORITY           |
         PVR_TIMER_TYPE_SUPPORTS_LIFETIME           |
-        PVR_TIMER_TYPE_SUPPORTS_RECORDING_FOLDERS  |
-        PVR_TIMER_TYPE_SUPPORTS_RECORDING_FOLDER_LIST; //One type to check it works
+        PVR_TIMER_TYPE_SUPPORTS_RECORDING_GROUP ; //One type to check it works
 
     if (m_conn.GetProtocol() >= 20)
     {
@@ -726,8 +742,11 @@ PVR_ERROR CTvheadend::GetTimerTypes ( PVR_TIMER_TYPE types[], int *size )
         /* Values definitions for prevent duplicate episodes. */
         deDupValues,
         DVR_AUTOREC_RECORD_ALL,
+        /* Lifetime definitions - not required before ??*/
+        lifeValues,
+        0,
         /* Folder name definitions */
-        myFolderValues,
+        recGroupValues,
         0 )); //Default
   }
 

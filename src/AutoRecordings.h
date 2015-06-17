@@ -32,6 +32,7 @@ extern "C"
 #include "kodi/libXBMC_pvr.h"
 #include "HTSPTypes.h"
 
+
 class CHTSPConnection;
 
 class AutoRecordings
@@ -59,7 +60,13 @@ public:
   bool ParseAutorecAddOrUpdate(htsmsg_t *msg, bool bAdd);
   bool ParseAutorecDelete(htsmsg_t *msg);
 
+  bool SetLifetimeValues(std::vector< std::pair<int, std::string> > &listValues);
+  bool SetRecordingGroupValues(std::vector< std::pair<int, std::string> > &listValues);
+
 private:
   CHTSPConnection         &m_conn;
   htsp::AutoRecordingsMap  m_autoRecordings;
+  //static std::vector< std::pair<int, std::string> > m_lifeValues;
+  //static std::vector< std::pair<int, std::string> > m_recGroupValues;
+
 };
